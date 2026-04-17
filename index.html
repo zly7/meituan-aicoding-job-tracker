@@ -1,0 +1,318 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offer Atlas | 求职申请管理看板</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=''http://www.w3.org/2000/svg'' viewBox=''0 0 64 64''%3E%3Crect width=''64'' height=''64'' rx=''18'' fill=''%23d96c3d''/%3E%3Cpath d=''M18 20h28v6H18zm0 12h20v6H18zm0 12h28v6H18z'' fill=''%23fffaf2''/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <div class="aurora aurora-left"></div>
+    <div class="aurora aurora-right"></div>
+
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Offer Atlas</p>
+        <h1>求职申请管理看板</h1>
+        <p class="subcopy">把分散的投递进度、关键节点和材料版本收拢成一个可行动的指挥台。</p>
+      </div>
+      <div class="topbar-actions">
+        <div class="today-panel">
+          <span class="today-label">今日焦点</span>
+          <strong id="todayFocus">载入中</strong>
+          <span id="todayDate"></span>
+        </div>
+        <button class="primary-btn" id="openCreateModalBtn" type="button">+ 新建申请</button>
+      </div>
+    </header>
+
+    <nav class="view-tabs" aria-label="主导航">
+      <button class="tab-button active" data-view="dashboard" type="button">首页总览</button>
+      <button class="tab-button" data-view="board" type="button">申请看板</button>
+      <button class="tab-button" data-view="calendar" type="button">日历视图</button>
+      <button class="tab-button" data-view="materials" type="button">材料中心</button>
+      <button class="tab-button" data-view="analytics" type="button">数据复盘</button>
+    </nav>
+
+    <main class="views">
+      <section class="view active" id="dashboard-view">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Dashboard</p>
+            <h2>30 秒看清现在最重要的事</h2>
+          </div>
+          <div class="pill-row" id="dashboardPills"></div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="dashboard-grid">
+          <section class="panel panel-tall">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-kicker">Today</p>
+                <h3>今日待办</h3>
+              </div>
+            </div>
+            <div id="todayTasks" class="list-stack"></div>
+          </section>
+
+          <section class="panel panel-tall">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-kicker">Urgent</p>
+                <h3>紧急申请</h3>
+              </div>
+            </div>
+            <div id="urgentApplications" class="list-stack"></div>
+          </section>
+
+          <section class="panel panel-wide">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-kicker">Timeline</p>
+                <h3>本周时间轴</h3>
+              </div>
+            </div>
+            <div id="weeklyTimeline" class="timeline"></div>
+          </section>
+
+          <section class="panel panel-wide">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-kicker">Risk Radar</p>
+                <h3>风险提醒</h3>
+              </div>
+            </div>
+            <div id="riskList" class="list-stack"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="board-view">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Board</p>
+            <h2>所有申请当前处在哪一步</h2>
+          </div>
+          <button class="secondary-btn" id="boardCreateBtn" type="button">录入新岗位</button>
+        </div>
+
+        <section class="panel toolbar-panel">
+          <div class="toolbar-grid">
+            <label>
+              <span>搜索公司/岗位</span>
+              <input id="searchInput" type="search" placeholder="例如 美团 / 产品经理" />
+            </label>
+            <label>
+              <span>阶段</span>
+              <select id="stageFilter"></select>
+            </label>
+            <label>
+              <span>优先级</span>
+              <select id="priorityFilter"></select>
+            </label>
+            <label>
+              <span>风险等级</span>
+              <select id="riskFilter"></select>
+            </label>
+            <label class="checkbox-label">
+              <input id="hideEndedFilter" type="checkbox" />
+              <span>隐藏已结束</span>
+            </label>
+          </div>
+        </section>
+
+        <div id="boardColumns" class="board-columns"></div>
+      </section>
+
+      <section class="view" id="calendar-view">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Calendar</p>
+            <h2>把截止日、笔试和面试排到时间线上</h2>
+          </div>
+          <div class="segmented-control">
+            <button class="segment active" data-calendar-mode="month" type="button">月视图</button>
+            <button class="segment" data-calendar-mode="week" type="button">周视图</button>
+            <button class="segment" data-calendar-mode="list" type="button">列表视图</button>
+          </div>
+        </div>
+
+        <div class="calendar-grid">
+          <section class="panel panel-wide">
+            <div class="panel-heading compact-heading">
+              <div>
+                <p class="panel-kicker">Planner</p>
+                <h3 id="calendarTitle">本月安排</h3>
+              </div>
+            </div>
+            <div id="calendarMain"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-kicker">Conflicts</p>
+                <h3>冲突提示</h3>
+              </div>
+            </div>
+            <div id="conflictList" class="list-stack"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="materials-view">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Materials</p>
+            <h2>清楚知道哪些岗位用了哪版材料</h2>
+          </div>
+        </div>
+
+        <div class="materials-grid">
+          <section class="panel panel-wide">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-kicker">Library</p>
+                <h3>材料库</h3>
+              </div>
+            </div>
+            <div id="materialsSummary" class="stats-grid compact-stats"></div>
+            <div id="materialsTable" class="table-card"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-kicker">Gaps</p>
+                <h3>缺口提醒</h3>
+              </div>
+            </div>
+            <div id="materialGaps" class="list-stack"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="analytics-view">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Analytics</p>
+            <h2>复盘这一轮投递节奏和转化情况</h2>
+          </div>
+        </div>
+
+        <div class="analytics-grid">
+          <section class="panel panel-wide">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-kicker">Funnel</p>
+                <h3>阶段分布</h3>
+              </div>
+            </div>
+            <div id="funnelChart" class="funnel-chart"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-kicker">Priority</p>
+                <h3>优先级分布</h3>
+              </div>
+            </div>
+            <div id="priorityBreakdown" class="metric-stack"></div>
+          </section>
+
+          <section class="panel panel-wide">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-kicker">Insights</p>
+                <h3>策略洞察</h3>
+              </div>
+            </div>
+            <div id="insightCards" class="insight-grid"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <aside class="drawer" id="detailDrawer" aria-hidden="true">
+    <div class="drawer-header">
+      <div>
+        <p class="panel-kicker">Application Detail</p>
+        <h2 id="drawerTitle">申请详情</h2>
+      </div>
+      <button class="icon-btn" id="closeDrawerBtn" type="button">关闭</button>
+    </div>
+    <div id="drawerContent" class="drawer-content"></div>
+  </aside>
+
+  <div class="modal hidden" id="createModal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="drawer-header">
+        <div>
+          <p class="panel-kicker">New Application</p>
+          <h2>录入新申请</h2>
+        </div>
+        <button class="icon-btn" id="closeCreateModalBtn" type="button">关闭</button>
+      </div>
+      <form id="createForm" class="form-grid">
+        <label>
+          <span>公司名称</span>
+          <input name="companyName" type="text" required />
+        </label>
+        <label>
+          <span>岗位名称</span>
+          <input name="jobTitle" type="text" required />
+        </label>
+        <label>
+          <span>城市 / 部门</span>
+          <input name="city" type="text" placeholder="上海 / 商业分析" />
+        </label>
+        <label>
+          <span>当前阶段</span>
+          <select name="stage" id="formStage"></select>
+        </label>
+        <label>
+          <span>截止日期</span>
+          <input name="deadline" type="date" />
+        </label>
+        <label>
+          <span>优先级</span>
+          <select name="priority" id="formPriority"></select>
+        </label>
+        <label class="span-2">
+          <span>下一关键动作</span>
+          <input name="nextAction" type="text" placeholder="例如：周四前完成业务案例准备" />
+        </label>
+        <label class="span-2">
+          <span>岗位链接</span>
+          <input name="jobLink" type="url" placeholder="https://..." />
+        </label>
+        <label>
+          <span>来源渠道</span>
+          <input name="source" type="text" placeholder="官网 / 内推 / BOSS" />
+        </label>
+        <label>
+          <span>薪资范围</span>
+          <input name="salaryRange" type="text" placeholder="15k-20k x 16" />
+        </label>
+        <label class="span-2">
+          <span>备注</span>
+          <textarea name="notes" rows="4" placeholder="记录岗位亮点、面试准备重点等"></textarea>
+        </label>
+        <div class="form-actions span-2">
+          <button class="secondary-btn" id="cancelCreateBtn" type="button">取消</button>
+          <button class="primary-btn" type="submit">保存申请</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
